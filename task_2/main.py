@@ -1,79 +1,19 @@
-import json
+import json  # импорт библиотеки для работы с JSON
 
-list = "C:/l/car.json"
-with open(list, 'r', encoding='utf-8') as file:
-    data = json.load(file)
+file_path = "S:/students/GR_88/Доброва Анна/ИПО/ipo-lr-7/task_2/car.json"  # путь к файлу
 
-menu = data["menu"]
-cars = data["cars"]
-operations = 0
-
-while True:
-    print("Меню:")
-    for i in menu:
-        for key, value in i.items():
-            print(key + ": " + value)
-
-    vvod = input("Выберите нужный пункт меню: ")
-
-    if vvod == "1":
-        for car in cars:
-            print("ID:", car["id"])
-            print("Модель:", car["name"])
-            print("Производитель:", car["manufacturer"])
-            print("Бензин:", "Да" if car["is_petrol"] else "Нет")
-            print("Объём бака:", car["tank_volume"], "литров")
-            print("-----------------------------------")
-        operations += 1
-
-    elif vvod == "2":
-        id = input("Введите id записи: ")
-        found = False
-        for i in range(len(cars)):
-            if str(cars[i]["id"]) == id:
-                print(f"Запись в позиции {i}:")
-                print(cars[i])
-                found = True
-                break
-        if not found:
-            print("Запись не найдена")
-        operations += 1
-
-    elif vvod == "3":
-        new_id = int(input("Введите id: "))
-        new_name = input("Введите название модели: ")
-        new_manufacturer = input("Введите производителя: ")
-        new_is_petrol = input("Бензиновая? (да/нет): ").lower() == "да"
-        new_tank_volume = int(input("Введите объём бака: "))
-        new_record = {
-            "id": new_id,
-            "name": new_name,
-            "manufacturer": new_manufacturer,
-            "is_petrol": new_is_petrol,
-            "tank_volume": new_tank_volume
-        }
-        cars.append(new_record)
-        with open(list, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print("Запись добавлена")
-        operations += 1
-
-    elif vvod == "4":
-        id = input("Введите id записи для удаления: ")
-        for i in range(len(cars)):
-            if str(cars[i]["id"]) == id:
-                del cars[i]
-                print("Запись удалена")
-                with open(list, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, ensure_ascii=False, indent=2)
-                break
-        else:
-            print("Запись не найдена")
-        operations += 1
-
-    elif vvod == "5":
-        print(f"Завершение программы. Выполнено операций: {operations}")
-        break
-
-    else:
-        print("Неверный пункт меню. Попробуйте снова.")
+with open(file_path, 'r', encoding='utf-8') as file:  # открыть файл для чтения с правильной кодировкой
+    data = json.load(file)  # загрузить содержимое файла в переменную data
+qualification_number = input("Введите номер квалификации: ").strip()  # запросить у пользователя номер и убрать лишние пробелы
+result = None  # инициализация переменной для хранения найденного объекта
+for item in data:  # пройти по всем элементам в списке
+    if item.get('model') == 'data.specialty':  # проверить, что модель равна 'data.specialty'
+            result = item  # сохранить найденный элемент в переменную result
+            break  # выйти из цикла после нахождения
+if result:  # если найдена
+    title = result.get('fields', {}).get('title')  # получить название или указать по умолчанию
+    c_type = result.get('fields', {}).get('c_type', 'Нет типа')  # получить c_type или указать по умолчанию
+    print("=============== Найдено ===============")  # вывести строку для обозначения результата
+    print(f"{qualification_number} >> Специальность \"{title}\", {c_type}")  # вывести номер и название специальности
+else:  # если ничего не найдено
+    print("=============== Не найдено ===============")  # вывести строку
