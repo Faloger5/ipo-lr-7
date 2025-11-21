@@ -1,6 +1,6 @@
 import json  # импорт библиотеки для работы с JSON
 
-file_path = "S:/students/GR_88/Доброва Анна/ИПО/ipo-lr-7/task_2/car.json"  # путь к файлу
+file_path = "S:/students/GR_88/Доброва Анна/ИПО/ipo-lr-7/task_2/college.json"  # путь к файлу
 
 with open(file_path, 'r', encoding='utf-8') as file:  # открыть файл для чтения с правильной кодировкой
     data = json.load(file)  # загрузить содержимое файла в переменную data
