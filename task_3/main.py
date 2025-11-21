@@ -8,15 +8,6 @@ operation_count = 0  # Счётчик выполненных операций (�
 try:
     with open(filename, 'r') as f:  # Открываем файл для чтения
         data = json.load(f)  # Загружаем содержимое файла (список словарей)
-except FileNotFoundError:
-    # Если файла не существует, создаём начальные данные
-    data = [
-        {"id": 1, "name": "Model S", "manufacturer": "Tesla", "is_petrol": False, "tank_volume": 85},
-        {"id": 2, "name": "Golf", "manufacturer": "Volkswagen", "is_petrol": True, "tank_volume": 50},
-        {"id": 3, "name": "Civic", "manufacturer": "Honda", "is_petrol": True, "tank_volume": 47},
-        {"id": 4, "name": "Mustang", "manufacturer": "Ford", "is_petrol": True, "tank_volume": 61},
-        {"id": 5, "name": "Model 3", "manufacturer": "Tesla", "is_petrol": False, "tank_volume": 54}
-    ]
     # Записываем эти начальные данные в файл, чтобы он существовал для следующих запусков
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)  # Запись с отступами для читаемости
