@@ -1,90 +1,65 @@
-# collision/collision.py
-
-# Определяем исключение для некорректных прямоугольников
-class RectCorrectError(Exception):
-    pass
+from .errors import RectCorrectError
 
 def isCorrectRect(rect):
     """
-    Проверяет корректность определения прямоугольника.
-    rect: список из двух кортежей: [ (x1, y1), (x2, y2) ]
-    Возвращает True, если левый нижний угол действительно меньше верхнего правого.
+    Проверяет корректность прямоугольника.
+    rect: список из двух кортежей [(x1, y1), (x2, y2)]
     """
-    if not isinstance(rect, list) or len(rect) != 2:
+    if len(rect) != 2:
         return False
-    lower_left, upper_right = rect
-    if not (isinstance(lower_left, tuple) and isinstance(upper_right, tuple)):
-        return False
-    if len(lower_left) != 2 or len(upper_right) != 2:
-        return False
-    
-    x1, y1 = lower_left
-    x2, y2 = upper_right
+    (x1, y1), (x2, y2) = rect
     return x1 < x2 and y1 < y2
+
 
 def isCollisionRect(rect1, rect2):
     """
-    Проверяет, пересекаются ли два прямоугольника.
-    Возвращает True или False.
+    Проверяет пересечение двух прямоугольников.
     """
-    # Проверка корректности прямоугольников
     if not isCorrectRect(rect1):
-        raise RectCorrectError("1й прямоугольник некорректный")
+        raise RectCorrectError("1й прямоугольник некоректный")
     if not isCorrectRect(rect2):
-        raise RectCorrectError("2й прямоугольник некорректный")
-    
-    (x1_min, y1_min), (x1_max, y1_max) = rect1
-    (x2_min, y2_min), (x2_max, y2_max) = rect2
+        raise RectCorrectError("2й прямоугольник некоректный")
 
-    # Проверка пересечения по горизонтали и вертикали
-    if x1_max < x2_min or x2_max < x1_min:
-        return False
-    if y1_max < y2_min or y2_max < y1_min:
-        return False
-    return True
+    (x1, y1), (x2, y2) = rect1
+    (a1, b1), (a2, b2) = rect2
+
+    return not (x2 < a1 or a2 < x1 or y2 < b1 or b2 < y1)
+
 
 def intersectionAreaRect(rect1, rect2):
     """
-    Вычисляет площадь пересечения двух прямоугольников.
-    Если пересечения нет – возвращает 0.
+    Возвращает площадь пересечения двух прямоугольников.
     """
-    # Проверка корректности
-    if not isCorrectRect(rect1):
-        raise ValueError("Некорректный первый прямоугольник")
-    if not isCorrectRect(rect2):
-        raise ValueError("Некорректный второй прямоугольник")
-    (x1_min, y1_min), (x1_max, y1_max) = rect1
-    (x2_min, y2_min), (x2_max, y2_max) = rect2
+    if not isCorrectRect(rect1) or not isCorrectRect(rect2):
+        raise ValueError("Некорректный прямоугольник")
 
-    # Вычисляем границы пересечения
-    x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
-    y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
+    if not isCollisionRect(rect1, rect2):
+        return 0
 
-    return x_overlap * y_overlap
+    (x1, y1), (x2, y2) = rect1
+    (a1, b1), (a2, b2) = rect2
 
-def intersectionAreaMultiRect(rects):
+    x_overlap = min(x2, a2) - max(x1, a1)
+    y_overlap = min(y2, b2) - max(y1, b1)
+
+    return x_overlap * y_overlap if x_overlap > 0 and y_overlap > 0 else 0
+
+
+def intersectionAreaMultiRect(rectangles):
     """
-    Вычисляет объединённую площадь пересечения всех прямоугольников.
+    Возвращает уникальную площадь пересечения всех прямоугольников.
     """
-    # Проверка корректности каждого прямоугольника
-    for idx, rect in enumerate(rects):
+    for rect in rectangles:
         if not isCorrectRect(rect):
-            raise RectCorrectError(f"Некорректный прямоугольник по индексу {idx}")
+            raise RectCorrectError("Некорректный прямоугольник")
 
     # Начинаем с первого прямоугольника
-    overlap_x_min, overlap_y_min = rects[0][0]
-    overlap_x_max, overlap_y_max = rects[0][1]
-    
-    for rect in rects[1:]:
-        (x_min, y_min), (x_max, y_max) = rect
-        # Находим пересечение по горизонтали
-        overlap_x_min = max(overlap_x_min, x_min)
-        overlap_x_max = min(overlap_x_max, x_max)
-        # Находим пересечение по вертикали
-        overlap_y_min = max(overlap_y_min, y_min)
-        overlap_y_max = min(overlap_y_max, y_max)
-        # Если пересечение не существует, возвращаем 0
-        if overlap_x_max <= overlap_x_min or overlap_y_max <= overlap_y_min:
+    inter = rectangles[0]
+    for rect in rectangles[1:]:
+        if not isCollisionRect(inter, rect):
             return 0
+        (x1, y1), (x2, y2) = inter
+        (a1, b1), (a2, b2) = rect
+        inter = [(max(x1, a1), max(y1, b1)), (min(x2, a2), min(y2, b2))]
 
-    return (overlap_x_max - overlap_x_min) * (overlap_y_max - overlap_y_min)
+    return intersectionAreaRect(inter, inter)
