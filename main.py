@@ -3,7 +3,7 @@ print("start code …")
 # Импортируем всё из пакета (название пакета укажи своё, например rectpack или просто rectpkg)
 from rectpkg import isCorrectRect, isCollisionRect, intersectionAreaRect, intersectionAreaMultiRect, RectCorrectError
 
-# Примеры использования:
+#Примеры использования:
 
 # 1. Проверка корректности прямоугольника
 rect1 = [(0, 0), (5, 5)]
