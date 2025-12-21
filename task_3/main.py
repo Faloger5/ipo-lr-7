@@ -1,140 +1,124 @@
-# Доброва Анна
-import json  # Импортируем модуль json для работы с файлами в формате JSON
+#Доброва Анна
+import json  # Импортируем модуль json для работы с файлами формата JSON
 
-filename = 'cars.json'  # Имя файла, где хранятся записи
-operation_count = 0  # Счётчик выполненных операций (кроме чтения)
+filename = 'S:/students/GR_88/Доброва Анна/ИПО/ipo-lr-7/task_3(lr-9)/cars.json'  # Имя файла, где будут храниться записи
+operation_count = 0  # Счётчик операций добавления/удаления (чтение не учитывается)
 
-# Попытка открыть файл и загрузить из него данные
-try:
-    with open(filename, 'r') as f:  # Открываем файл для чтения
-        data = json.load(f)  # Загружаем содержимое файла (список словарей)
-    # Записываем эти начальные данные в файл, чтобы он существовал для следующих запусков
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)  # Запись с отступами для читаемости
-except:
-    # Если файла нет или ошибка чтения — создаём пустой список и файл
-    data = []
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
 
-# Основной цикл программы — бесконечное меню
-while True:
-    print("\nМеню:")  # Выводим меню для пользователя
-    print("1. Вывести все записи")  # Пункт 1
-    print("2. Вывести запись по полю")  # Пункт 2
-    print("3. Добавить запись")  # Пункт 3
-    print("4. Удалить запись по полю")  # Пункт 4
-    print("5. Выйти из программы")  # Пункт 5
-    choice = input("Введите номер пункта: ")  # Ввод выбора пользователя
+def load_data():  # Определяем функцию для загрузки данных из файла
+    try:  # Пытаемся открыть файл
+        with open(filename, 'r') as f:  # Открываем файл в режиме чтения
+            return json.load(f)  # Загружаем содержимое файла и возвращаем список словарей
+    except:  # Если файла нет или ошибка
+        return []  # Возвращаем пустой список
 
-    if choice == '1':  # Если выбрано '1'
-        # Вывод всех записей
-        print("\nВсе записи:")
-        try:
-            with open(filename, 'r') as f:  # Открываем файл для чтения
-                data = json.load(f)  # Загружаем актуальные данные
-            # Проходим по каждой записи в списке
-            for record in data:
-                # Выводим каждую запись в формате с отступами
-                print(json.dumps(record, indent=4))
-        except:
-            # Обработка ошибок при чтении файла
-            print("Ошибка при чтении файла.")
 
-    elif choice == '2':  # Если выбрано '2'
-        # Вывод записи по id
-        search_id_input = input("Введите id записи: ")  # Запрашиваем id для поиска
-        if not search_id_input.isdigit():  # Проверка, что ввод — число
-            print("Некорректный ввод.")  # Сообщение об ошибке
-            continue  # Возврат к началу меню
-        search_id = int(search_id_input)  # Преобразование строки в число
-        found = False  # Флаг, найден ли запись
-        try:
-            with open(filename, 'r') as f:
-                data = json.load(f)  # Загружаем текущие данные
-            for idx, record in enumerate(data):  # Перебираем записи с индексами
-                if record.get('id') == search_id:  # Если id совпало
-                    print(f"Запись найдена на позиции {idx}:")  # Сообщение
-                    print(json.dumps(record, indent=4))  # Вывод записи
-                    found = True  # Устанавливаем флаг найдено
-                    break  # Выходим из цикла
-            if not found:  # Если не нашли
-                print("Запись с таким id не найдена.")  # Предупреждение
-        except:
-            print("Ошибка при чтении файла.")  # Обработка ошибок
+def save_data(data):  # Определяем функцию для сохранения данных в файл
+    with open(filename, 'w') as f:  # Открываем файл в режиме записи
+        json.dump(data, f, indent=4)  # Записываем список словарей в JSON с отступами
 
-    elif choice == '3':  # Если выбрано '3' — добавление
-        try:
-            with open(filename, 'r') as f:  # Читаем текущие данные
-                data = json.load(f)
-        except:
-            data = []  # Если файла нет или ошибка, создаём пустой список
 
-        # Находим максимальный id среди существующих
-        max_id = max([record['id'] for record in data], default=0)
-        new_id = max_id + 1  # Новый id — на единицу больше максимального
+def show_all_records():  # Функция для вывода всех записей
+    data = load_data()  # Загружаем данные из файла
+    if not data:  # Проверяем, пустой ли список
+        print("Файл пуст или отсутствует.")  # Сообщаем пользователю
+        return  # Завершаем выполнение функции
+    print("\nВсе записи:")  # Заголовок
+    for record in data:  # Перебираем каждую запись
+        print(json.dumps(record, indent=4))  # Выводим запись в красивом формате
 
-        # Запрашиваем у пользователя поля новой записи
-        name = input("Введите название модели: ")
-        manufacturer = input("Введите производителя: ")
 
-        # Запрос о типе топлива
-        is_petrol_input = input("Заправляется ли машина бензином? (да/нет): ").lower()
-        is_petrol = True if is_petrol_input == 'да' else False  # Булево значение
+def show_record_by_id():  # Функция для поиска записи по ID
+    search_id_input = input("Введите id записи: ")  # Запрашиваем ID у пользователя
+    if not search_id_input.isdigit():  # Проверяем, что введено число
+        print("Некорректный ввод.")  # Сообщаем об ошибке
+        return  # Завершаем функцию
+    search_id = int(search_id_input)  # Преобразуем строку в число
+    data = load_data()  # Загружаем данные
+    for idx, record in enumerate(data):  # Перебираем записи с индексами
+        if record.get('id') == search_id:  # Если ID совпадает
+            print(f"Запись найдена на позиции {idx}:")  # Сообщаем позицию
+            print(json.dumps(record, indent=4))  # Выводим запись
+            return  # Завершаем функцию
+    print("Запись с таким id не найдена.")  # Если не нашли — выводим сообщение
 
-        tank_volume_input = input("Введите объем бака (литры): ")
-        if not tank_volume_input.isdigit():  # Проверка, что введено число
-            print("Некорректный объем бака.")
-            continue  # Переходим к следующему циклу
-        tank_volume = int(tank_volume_input)
 
-        # Создаём новую запись как словарь
-        new_record = {
-            "id": new_id,  # Новый уникальный id
-            "name": name,
-            "manufacturer": manufacturer,
-            "is_petrol": is_petrol,
-            "tank_volume": tank_volume
-        }
-        # Добавляем новую запись в список
-        data.append(new_record)
-        # Записываем обновлённые данные обратно в файл
-        with open(filename, 'w') as f:
-            json.dump(data, f, indent=4)
-        print("Запись добавлена.")  # Уведомление
-        operation_count += 1  # Увеличиваем счетчик операций
+def add_record():  # Функция для добавления новой записи
+    global operation_count  # Указываем, что будем изменять глобальный счётчик
+    data = load_data()  # Загружаем текущие данные
+    max_id = max([record['id'] for record in data], default=0)  # Находим максимальный ID
+    new_id = max_id + 1  # Новый ID = максимальный + 1
 
-    elif choice == '4':  # Если выбрано '4' — удаление
-        search_id_input = input("Введите id записи для удаления: ")
-        if not search_id_input.isdigit():
-            print("Некорректный ввод.")
-            continue
-        search_id = int(search_id_input)
-        try:
-            with open(filename, 'r') as f:  # Читаем текущие данные
-                data = json.load(f)
-            found_index = -1  # Изначально не нашли
-            for idx, record in enumerate(data):  # Перебираем с индексами
-                if record.get('id') == search_id:  # Если нашли искомый id
-                    found_index = idx  # Запоминаем позицию
-                    break
-            if found_index == -1:  # Если не нашли
-                print("Запись с таким id не найдена.")
-            else:
-                # Удаляем запись из списка
-                del data[found_index]
-                # Записываем обновлённые данные
-                with open(filename, 'w') as f:
-                    json.dump(data, f, indent=4)
-                print("Запись удалена.")  # Уведомление
-                operation_count += 1  # Увеличиваем счетчик
-        except:
-            print("Ошибка при чтении файла.")
+    name = input("Введите название модели: ")  # Запрашиваем название модели
+    manufacturer = input("Введите производителя: ")  # Запрашиваем производителя
+    is_petrol_input = input("Заправляется ли машина бензином? (да/нет): ").lower()  # Запрашиваем тип топлива
+    is_petrol = True if is_petrol_input == 'да' else False  # Преобразуем в булево значение
 
-    elif choice == '5':  # Выйти из программы
-        # Перед завершением выводим количество выполненных операций
-        print(f"Количество выполненных операций: {operation_count}")
-        break  # Выходим из бесконечного цикла → завершение программы
+    tank_volume_input = input("Введите объем бака (литры): ")  # Запрашиваем объем бака
+    if not tank_volume_input.isdigit():  # Проверяем, что введено число
+        print("Некорректный объем бака.")  # Сообщаем об ошибке
+        return  # Завершаем функцию
+    tank_volume = int(tank_volume_input)  # Преобразуем строку в число
 
-    else:  # Если введено что-то другое
-        print("Некорректный выбор. Повторите попытку.")  # Сообщение об ошибке
+    new_record = {  # Создаём словарь новой записи
+        "id": new_id,
+        "name": name,
+        "manufacturer": manufacturer,
+        "is_petrol": is_petrol,
+        "tank_volume": tank_volume
+    }
+    data.append(new_record)  # Добавляем запись в список
+    save_data(data)  # Сохраняем обновлённые данные
+    print("Запись добавлена.")  # Сообщаем пользователю
+    operation_count += 1  # Увеличиваем счётчик операций
+
+
+def delete_record():  # Функция для удаления записи по ID
+    global operation_count  # Указываем, что будем изменять глобальный счётчик
+    search_id_input = input("Введите id записи для удаления: ")  # Запрашиваем ID
+    if not search_id_input.isdigit():  # Проверяем, что введено число
+        print("Некорректный ввод.")  # Сообщаем об ошибке
+        return  # Завершаем функцию
+    search_id = int(search_id_input)  # Преобразуем строку в число
+    data = load_data()  # Загружаем данные
+    for idx, record in enumerate(data):  # Перебираем записи
+        if record.get('id') == search_id:  # Если нашли совпадение
+            del data[idx]  # Удаляем запись
+            save_data(data)  # Сохраняем обновлённые данные
+            print("Запись удалена.")  # Сообщаем пользователю
+            operation_count += 1  # Увеличиваем счётчик операций
+            return  # Завершаем функцию
+    print("Запись с таким id не найдена.")  # Если не нашли — сообщение
+
+
+# --- Главное меню ---
+def main_menu():  # Функция для отображения меню
+    global operation_count  # Используем глобальный счётчик
+    while True:  # Бесконечный цикл меню
+        print("\nМеню:")  # Заголовок меню
+        print("1. Вывести все записи")  # Пункт меню
+        print("2. Вывести запись по полю")  # Пункт меню
+        print("3. Добавить запись")  # Пункт меню
+        print("4. Удалить запись по полю")  # Пункт меню
+        print("5. Выйти из программы")  # Пункт меню
+
+        choice = input("Введите номер пункта: ")  # Запрашиваем выбор пользователя
+
+        if choice == '1':  # Если выбрано 1
+            show_all_records()  # Вызываем функцию вывода всех записей
+        elif choice == '2':  # Если выбрано 2
+            show_record_by_id()  # Вызываем функцию поиска по ID
+        elif choice == '3':  # Если выбрано 3
+            add_record()  # Вызываем функцию добавления
+        elif choice == '4':  # Если выбрано 4
+            delete_record()  # Вызываем функцию удаления
+        elif choice == '5':  # Если выбрано 5
+            print(f"Количество выполненных операций: {operation_count}")  # Выводим счётчик
+            break  # Прерываем цикл → выход из программы
+        else:  # Если введено что-то другое
+            print("Некорректный выбор. Повторите попытку.")  # Сообщаем об ошибке
+
+
+# --- Запуск программы ---
+if __name__ == "__main__":  # Проверяем, что файл запущен напрямую
+    main_menu()  # Запускаем главное меню
